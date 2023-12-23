@@ -75,12 +75,17 @@ env = Env()
         file.write(settings)
         file.close()
 
+    settingup_celery(project_name)
+
 
 def create_django_project(project_name):
-    subprocess.run(['django-admin', 'startproject', project_name])
+    venv_path = os.path.realpath(__file__)
+    venv_path = venv_path.replace("auto-django.py", "venv").replace("\\", "/")
+    cmd = f'"{venv_path}/Scripts/activate" && django-admin startproject {project_name}'
+    subprocess.run(cmd, shell=True, check=True)
 
 
-def install_package_in_venv(database):
+def install_package_in_venv(database, celery):
     # Replace 'path/to/your/venv' with the path to your virtual environment
     venv_path = os.path.realpath(__file__)
     venv_path = venv_path.replace("auto-django.py", "venv")
@@ -99,12 +104,15 @@ def install_package_in_venv(database):
     elif database == 2:
         database_package = 'psycopg2'
 
-    install_cmd = f'pip install django djangorestframework {database_package} django-environ loguru django-cors-headers flake8'
+    celery_package = ""
+    if celery.lower() == 'y':
+        celery_package = 'celery'
+
+    install_cmd = f'pip install django djangorestframework {database_package} {celery_package} django-environ loguru django-cors-headers flake8'
 
     cmd = f'{activate_cmd} {install_cmd}'
     # Run the activation command and then install the package
     subprocess.run(cmd, shell=True, check=True)
-    # subprocess.run('pip install django', shell=True, check=True)
 
 
 def create_python_venv(python_path):
@@ -137,6 +145,9 @@ env = Env()
 __all__ = ("celery_app", "env")
 """)
 
+    with open(os.path.join(script_path.replace("auto-django.py", project_name), project_name, "settings.py"), 'a') as file:
+        file.write("\nCELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'\n")
+
 
 if __name__ == "__main__":
     python_path = input("Enter python path for a specific Python version or press Enter for the default environment: ").strip()
@@ -158,12 +169,10 @@ if __name__ == "__main__":
             print("Enter a valid integer or just press 'ENTER' for default DB configuration")
     project_name = input("Enter project name : ")
     python_path = python_path if python_path else "python"
+    celery = input("Do you want celery, 'Y' for yes: ")
     create_python_venv(python_path)
-    install_package_in_venv(database)
+    install_package_in_venv(database, celery)
     create_django_project(project_name)
     settingup_django(project_name, database)
-    celery = input("Do you want celery, 'Y' for yes: ")
-    if celery.lower == 'y':
-        settingup_celery(project_name)
     os.remove("settings.py")
     os.remove(sys.argv[0])
