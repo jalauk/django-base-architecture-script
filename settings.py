@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-    'testurls'
 ]
 
 MIDDLEWARE = [
@@ -80,12 +79,8 @@ WSGI_APPLICATION = 'django_base_architecture.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'USER': env('DB_USER'),
-        'HOST': env('DB_HOST'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'NAME': env('DB_NAME'),
-        'PORT': env('DB_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 

@@ -113,7 +113,8 @@ def create_python_venv(python_path):
 
 if __name__ == "__main__":
     python_path = input("Enter python path for a specific Python version or press Enter for the default environment: ").strip()
-    while database :
+    database = ""
+    while isinstance(database, str):
         database = input("""Enter a number to select a DB:
                         0 or enter for default
                         1 for mysql
@@ -133,6 +134,6 @@ if __name__ == "__main__":
     create_python_venv(python_path)
     install_package_in_venv(database)
     create_django_project(project_name)
-    settingup_django(python_path, database)
+    settingup_django(project_name, database)
     os.remove("settings.py")
     os.remove(sys.argv[0])
