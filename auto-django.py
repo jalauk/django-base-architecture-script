@@ -101,14 +101,41 @@ def install_package_in_venv(database):
 
     install_cmd = f'pip install django djangorestframework {database_package} django-environ loguru django-cors-headers flake8'
 
-    path = f'{activate_cmd} {install_cmd}'
+    cmd = f'{activate_cmd} {install_cmd}'
     # Run the activation command and then install the package
-    subprocess.run(path, shell=True, check=True)
+    subprocess.run(cmd, shell=True, check=True)
     # subprocess.run('pip install django', shell=True, check=True)
 
 
 def create_python_venv(python_path):
     subprocess.run([python_path, '-m', 'venv', 'venv'])
+
+
+def settingup_celery(project_name):
+    script_path = os.path.realpath(__file__)
+    celery_path = script_path.replace("auto-django.py", 'celery.py')
+
+    with open(celery_path, 'r') as file:
+        celery = file.read()
+        celery = celery.replace("django_base_architecture", project_name)
+        file.close()
+
+    with open(celery_path, 'w') as file:
+        celery = file.write(celery)
+        file.close()
+
+    shutil.move(celery_path, script_path.replace("auto-django.py", project_name), project_name)
+
+    with open(os.path.join(script_path.replace("auto-django.py", project_name), project_name, "__init__.py"), 'w') as file:
+        file.write("""from environ import Env
+from .celery import app as celery_app
+
+
+Env.read_env()
+env = Env()
+
+__all__ = ("celery_app", "env")
+""")
 
 
 if __name__ == "__main__":
@@ -135,5 +162,8 @@ if __name__ == "__main__":
     install_package_in_venv(database)
     create_django_project(project_name)
     settingup_django(project_name, database)
+    celery = input("Do you want celery, 'Y' for yes: ")
+    if celery.lower == 'y':
+        settingup_celery(project_name)
     os.remove("settings.py")
     os.remove(sys.argv[0])
