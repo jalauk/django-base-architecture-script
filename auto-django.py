@@ -106,7 +106,7 @@ def install_package_in_venv(database, celery):
 
     celery_package = ""
     if celery.lower() == 'y':
-        celery_package = 'celery'
+        celery_package = 'celery redis'
 
     install_cmd = f'pip install django djangorestframework {database_package} {celery_package} django-environ loguru django-cors-headers flake8'
 
@@ -132,7 +132,7 @@ def settingup_celery(project_name):
         celery = file.write(celery)
         file.close()
 
-    shutil.move(celery_path, script_path.replace("auto-django.py", project_name), project_name)
+    shutil.move(celery_path, os.path.join(script_path.replace("auto-django.py", project_name), project_name))
 
     with open(os.path.join(script_path.replace("auto-django.py", project_name), project_name, "__init__.py"), 'w') as file:
         file.write("""from environ import Env
@@ -146,7 +146,7 @@ __all__ = ("celery_app", "env")
 """)
 
     with open(os.path.join(script_path.replace("auto-django.py", project_name), project_name, "settings.py"), 'a') as file:
-        file.write("\nCELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'\n")
+        file.write("\nCELERY_BROKER_URL = env('CELERY_BROKER_URL')\n")
 
 
 if __name__ == "__main__":
