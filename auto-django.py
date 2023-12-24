@@ -12,9 +12,12 @@ def settingup_django(project_name, database, celery, redis):
         settings = file.read()
         file.close()
 
-    with open(os.path.join(script_path.replace("auto-django.py", 'utils/responder.py')), 'w+') as file:
+    with open(os.path.join(script_path.replace("auto-django.py", 'utils/responder.py')), 'r') as file:
         responder = file.read()
         responder = responder.replace("django_base_architecture", project_name)
+        file.close()
+
+    with open(os.path.join(script_path.replace("auto-django.py", 'utils/responder.py')), 'w') as file:
         file.write(responder)
         file.close()
 
@@ -66,8 +69,8 @@ env = Env()
 }"""
         settings = settings.replace(db_default_config, db_config)
 
-        if redis.lower() == 'y':
-            settings = settings + """\nCACHES = {
+    if redis.lower() == 'y':
+        settings = settings + """\nCACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": env("CACHE_BROKER_URL"),
@@ -115,7 +118,7 @@ def install_package_in_venv(database, celery="", redis=""):
     if celery.lower() == 'y':
         celery_and_redis_package = 'celery redis'
     elif redis.lower() == 'y':
-        celery_and_redis_package = 'redis'
+        celery_and_redis_package = 'redis django-redis'
 
     install_cmd = f'pip install django djangorestframework {database_package} {celery_and_redis_package} django-environ loguru django-cors-headers flake8'
 
@@ -132,9 +135,11 @@ def settingup_celery(project_name):
     script_path = os.path.realpath(__file__)
     celery_path = script_path.replace("auto-django.py", 'celery.py')
 
-    with open(celery_path, 'w+') as file:
+    with open(celery_path, 'r') as file:
         celery = file.read()
         celery = celery.replace("django_base_architecture", project_name)
+
+    with open(celery_path, 'w') as file:
         file.write(celery)
         file.close()
 
