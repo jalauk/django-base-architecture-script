@@ -4,7 +4,7 @@ import os
 import shutil
 
 
-def settingup_django(project_name, database):
+def settingup_django(project_name, database, celery, redis):
     script_path = os.path.realpath(__file__)
     base_settings_path = script_path.replace("auto-django.py", 'settings.py')
 
@@ -12,13 +12,9 @@ def settingup_django(project_name, database):
         settings = file.read()
         file.close()
 
-    with open(os.path.join(script_path.replace("auto-django.py", 'utils/responder.py')), 'r') as file:
+    with open(os.path.join(script_path.replace("auto-django.py", 'utils/responder.py')), 'w+') as file:
         responder = file.read()
-        file.close()
-
-    responder = responder.replace("django_base_architecture", project_name)
-
-    with open(os.path.join(script_path.replace("auto-django.py", 'utils/responder.py')), 'w') as file:
+        responder = responder.replace("django_base_architecture", project_name)
         file.write(responder)
         file.close()
 
@@ -45,7 +41,6 @@ env = Env()
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }"""
-    print("finding : ", settings.find(db_default_config))
     if database == 1:
         db_config = """DATABASES = {
     'default': {
@@ -71,11 +66,23 @@ env = Env()
 }"""
         settings = settings.replace(db_default_config, db_config)
 
+        if redis.lower() == 'y':
+            settings = settings + """\nCACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": env("CACHE_BROKER_URL"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}\n"""
+
     with open(os.path.join(script_path.replace("auto-django.py", project_name), f'{project_name}', 'settings.py'), 'w') as file:
         file.write(settings)
         file.close()
 
-    settingup_celery(project_name)
+    if celery.lower() == 'y':
+        settingup_celery(project_name)
 
 
 def create_django_project(project_name):
@@ -85,7 +92,7 @@ def create_django_project(project_name):
     subprocess.run(cmd, shell=True, check=True)
 
 
-def install_package_in_venv(database, celery):
+def install_package_in_venv(database, celery="", redis=""):
     # Replace 'path/to/your/venv' with the path to your virtual environment
     venv_path = os.path.realpath(__file__)
     venv_path = venv_path.replace("auto-django.py", "venv")
@@ -104,11 +111,13 @@ def install_package_in_venv(database, celery):
     elif database == 2:
         database_package = 'psycopg2'
 
-    celery_package = ""
+    celery_and_redis_package = ""
     if celery.lower() == 'y':
-        celery_package = 'celery redis'
+        celery_and_redis_package = 'celery redis'
+    elif redis.lower() == 'y':
+        celery_and_redis_package = 'redis'
 
-    install_cmd = f'pip install django djangorestframework {database_package} {celery_package} django-environ loguru django-cors-headers flake8'
+    install_cmd = f'pip install django djangorestframework {database_package} {celery_and_redis_package} django-environ loguru django-cors-headers flake8'
 
     cmd = f'{activate_cmd} {install_cmd}'
     # Run the activation command and then install the package
@@ -123,13 +132,10 @@ def settingup_celery(project_name):
     script_path = os.path.realpath(__file__)
     celery_path = script_path.replace("auto-django.py", 'celery.py')
 
-    with open(celery_path, 'r') as file:
+    with open(celery_path, 'w+') as file:
         celery = file.read()
         celery = celery.replace("django_base_architecture", project_name)
-        file.close()
-
-    with open(celery_path, 'w') as file:
-        celery = file.write(celery)
+        file.write(celery)
         file.close()
 
     shutil.move(celery_path, os.path.join(script_path.replace("auto-django.py", project_name), project_name))
@@ -151,28 +157,41 @@ __all__ = ("celery_app", "env")
 
 if __name__ == "__main__":
     python_path = input("Enter python path for a specific Python version or press Enter for the default environment: ").strip()
+    while python_path:
+        if not os.path.exists(python_path):
+            python_path = input("please enter a existing python path or press 'enter' for default python: ").strip()
+            if python_path == "":
+                break
+            continue
+        else:
+            if python_path.split("\\")[-1] != "python.exe":
+                print(python_path.split("\\")[-1])
+                python_path = input("Given path is not a valid python path, path should contain 'python.exe' at end.").strip()
+            else:
+                break
+    if python_path == "":
+        python_path = 'python'
     database = ""
     while isinstance(database, str):
         database = input("""Enter a number to select a DB:
                         0 or enter for default
                         1 for mysql
-                        2 for postgres
-                        3 for mongodb\n""").strip()
+                        2 for postgres\n""").strip()
         try:
             if not database:
                 database = '0'
             database = int(database)
-            if database not in range(0, 4):
-                print("please select a valid number(0 to 3)")
+            if database not in range(0, 3):
+                print("please select a valid number(0 to 2)")
                 database = ""
         except ValueError:
             print("Enter a valid integer or just press 'ENTER' for default DB configuration")
     project_name = input("Enter project name : ")
-    python_path = python_path if python_path else "python"
     celery = input("Do you want celery, 'Y' for yes: ")
+    redis = input("want redis cache setup? 'Y' for yes: ")
     create_python_venv(python_path)
-    install_package_in_venv(database, celery)
+    install_package_in_venv(database, celery, redis)
     create_django_project(project_name)
-    settingup_django(project_name, database)
+    settingup_django(project_name, database, celery, redis)
     os.remove("settings.py")
     os.remove(sys.argv[0])
