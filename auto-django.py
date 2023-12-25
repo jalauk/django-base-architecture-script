@@ -114,13 +114,15 @@ def install_package_in_venv(database, celery="", redis=""):
     elif database == 2:
         database_package = 'psycopg2'
 
-    celery_and_redis_package = ""
+    celery_package = ""
     if celery.lower() == 'y':
-        celery_and_redis_package = 'celery redis'
-    elif redis.lower() == 'y':
-        celery_and_redis_package = 'redis django-redis'
+        celery_package = 'celery redis'
 
-    install_cmd = f'pip install django djangorestframework {database_package} {celery_and_redis_package} django-environ loguru django-cors-headers flake8'
+    redis_package = ""
+    if redis.lower() == 'y':
+        redis_package = 'redis django-redis'
+
+    install_cmd = f'pip install django djangorestframework {database_package} {celery_package} {redis_package} django-environ loguru django-cors-headers flake8'
 
     cmd = f'{activate_cmd} {install_cmd}'
     # Run the activation command and then install the package
