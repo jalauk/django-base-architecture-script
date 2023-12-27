@@ -96,7 +96,6 @@ if __name__ == "__main__":
             continue
         else:
             if python_path.split("\\")[-1] != "python.exe":
-                print(python_path.split("\\")[-1])
                 python_path = input("Given path is not a valid python path, path should contain 'python.exe' at end.").strip()
             else:
                 break
@@ -118,15 +117,13 @@ if __name__ == "__main__":
         except ValueError:
             print("Enter a valid integer or just press 'ENTER' for default DB configuration")
     while True:
-        name_regex = r'^[a-zA-Z_][a-zA-Z0-9_]*$'
-        project_name = input("Enter project name : ")
-        if bool(re.match(name_regex, project_name)):
-            break
+        project_name = input("Enter Django project name: ")
+        if not project_name.isidentifier():
+            print("""\n Project name must start with a letter or an underscore.
+                 Following characters can be letters, digits, or underscores.
+    #            It cannot start with a digit. Also, empty string is not allowed.""")
         else:
-            print(
-                """\nNames must start with a letter or an underscore.
-                Following characters can be letters, digits, or underscores.
-                Names cannot start with a digit.""")
+            break
     celery = input("Do you want celery, 'Y' for yes: ")
     redis = input("want redis cache setup? 'Y' for yes: ")
     create_python_venv(python_path)
