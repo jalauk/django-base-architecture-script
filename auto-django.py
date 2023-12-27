@@ -2,90 +2,33 @@ import subprocess
 import sys
 import os
 import shutil
+from scripts.celery_script import create_celery
+from scripts.exceptions_script import create_exceptions
+from scripts.utils_script import create_utils
+from scripts.settings_script import create_settings
+from scripts.logger_middleware_script import create_logger_middleware
 
 
 def settingup_django(project_name, database, celery, redis):
     script_path = os.path.realpath(__file__)
-    base_settings_path = script_path.replace("auto-django.py", 'settings.py')
+    base_path = script_path.replace("auto-django.py", project_name)
 
-    with open(base_settings_path, 'r') as file:
-        settings = file.read()
-        file.close()
+    settings_path = os.path.join(base_path, f'{project_name}/settings.py')
+    create_settings(settings_path, project_name, database, celery, redis)
 
-    with open(os.path.join(script_path.replace("auto-django.py", 'utils/responder.py')), 'r') as file:
-        responder = file.read()
-        responder = responder.replace("django_base_architecture", project_name)
-        file.close()
+    utils_path = os.path.join(base_path, "utils")
+    create_utils(utils_path, project_name)
 
-    with open(os.path.join(script_path.replace("auto-django.py", 'utils/responder.py')), 'w') as file:
-        file.write(responder)
-        file.close()
+    logger_path = os.path.join(base_path, f"{project_name}/middlewares/LoggerMiddleware.py")
+    create_logger_middleware(logger_path)
 
-    shutil.move(script_path.replace("auto-django.py", 'utils'), os.path.join(script_path.replace("auto-django.py", project_name), 'utils'))
-    shutil.move(script_path.replace("auto-django.py", 'middlewares'), os.path.join(script_path.replace("auto-django.py", project_name), project_name, "middlewares"))
-    shutil.move(script_path.replace("auto-django.py", '.env'), os.path.join(script_path.replace("auto-django.py", project_name), project_name))
-    shutil.move(script_path.replace("auto-django.py", 'exception.py'), os.path.join(script_path.replace("auto-django.py", project_name), project_name))
-    shutil.move(script_path.replace("auto-django.py", 'exception_handler.py'), os.path.join(script_path.replace("auto-django.py", project_name), project_name))
-
-    with open(os.path.join(script_path.replace("auto-django.py", project_name), project_name, "__init__.py"), 'w') as file:
-        file.write("""from environ import Env
-
-Env.read_env()
-env = Env()
-""")
-        file.close()
-
-    settings = settings.replace("django_base_architecture", project_name)
-
-    db_config = ""
-    db_default_config = """DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}"""
-    if database == 1:
-        db_config = """DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'USER': env('DB_USER'),
-        'HOST': env('DB_HOST'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'NAME': env('DB_NAME'),
-        'PORT': env('DB_PORT'),
-    }
-}"""
-        settings = settings.replace(db_default_config.strip(), db_config.strip())
-    elif database == 2:
-        db_config = """DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'USER': env('DB_USER'),
-        'HOST': env('DB_HOST'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'NAME': env('DB_NAME'),
-        'PORT': env('DB_PORT'),
-    }
-}"""
-        settings = settings.replace(db_default_config, db_config)
-
-    if redis.lower() == 'y':
-        settings = settings + """\nCACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": env("CACHE_BROKER_URL"),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
-    }
-}\n"""
-
-    with open(os.path.join(script_path.replace("auto-django.py", project_name), f'{project_name}', 'settings.py'), 'w') as file:
-        file.write(settings)
-        file.close()
+    exception_path = os.path.join(base_path, f"{project_name}/exception.py")
+    exception_handler_path = os.path.join(base_path, f"{project_name}/exception_handler.py")
+    create_exceptions(exception_path, exception_handler_path)
 
     if celery.lower() == 'y':
-        settingup_celery(project_name)
+        celery_path = os.path.join(base_path, f'{project_name}/celery.py')
+        create_celery(celery_path, project_name)
 
 
 def create_django_project(project_name):

@@ -1,4 +1,11 @@
-import traceback
+def create_exceptions(exception_path, exception_handler_path):
+    exception_content = """class ApiException(Exception):
+
+    def __init__(self, error_code):
+        self.error_code = error_code
+"""
+
+    exception_handler_content = """import traceback
 from rest_framework.decorators import api_view
 from django.conf import settings
 from django.urls.exceptions import Resolver404
@@ -66,3 +73,12 @@ def handle_validation_error(exception):
 @api_view(("GET",))
 def handler404(request, exception):
     return Responder.send(501, status=False)
+"""
+
+    with open(exception_path, 'w') as file1:
+        file1.write(exception_content)
+        file1.close()
+
+    with open(exception_handler_path, 'w') as file1:
+        file1.write(exception_handler_content)
+        file1.close()

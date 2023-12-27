@@ -1,4 +1,5 @@
-import time
+def create_logger_middleware(logger_path):
+    logger_content = '''import time
 from utils import Logger
 
 
@@ -39,3 +40,7 @@ class LoggerMiddleware(object):
             Logger.log(request, response, round(
                 time.time() - self.startTime, 2))
         return response
+'''
+    with open(logger_path, 'w') as file:
+        file.write(logger_content)
+        file.close()

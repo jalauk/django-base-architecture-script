@@ -1,4 +1,5 @@
-import os
+def create_celery(path, project_name):
+    celery_content = """import os
 
 from celery import Celery
 
@@ -19,4 +20,8 @@ app.autodiscover_tasks()
 
 @app.task(bind=True, ignore_result=True)
 def debug_task(self):
-    print(f'Request: {self.request!r}')
+    print(f'Request: {self.request!r}')"""
+    celery_content = celery_content.replace("django_base_architecture", project_name)
+    with open(path, 'w') as file:
+        file = file.write(celery_content)
+        file.close()
