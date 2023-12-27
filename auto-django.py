@@ -2,6 +2,7 @@ import subprocess
 import sys
 import os
 import shutil
+import re
 from scripts.celery_script import create_celery
 from scripts.exceptions_script import create_exceptions
 from scripts.utils_script import create_utils
@@ -14,6 +15,9 @@ from scripts.create_env_script import create_env
 def settingup_django(project_name, database, celery, redis):
     script_path = os.path.realpath(__file__)
     base_path = script_path.replace("auto-django.py", project_name)
+
+    env_path = os.path.join(base_path, f'{project_name}/.env')
+    create_env(env_path, celery, redis, database)
 
     init_path = os.path.join(base_path, f'{project_name}/__init__.py')
     create_project_init(init_path, celery)
@@ -28,9 +32,6 @@ def settingup_django(project_name, database, celery, redis):
     if celery.lower() == 'y':
         celery_path = os.path.join(base_path, f'{project_name}/celery.py')
         create_celery(celery_path, project_name)
-
-    env_path = os.path.join(base_path, f'{project_name}/.env')
-    create_env(env_path, celery, redis, database)
 
     utils_path = os.path.join(base_path, "utils")
     os.makedirs(utils_path)
@@ -85,35 +86,6 @@ def create_python_venv(python_path):
     subprocess.run([python_path, '-m', 'venv', 'venv'])
 
 
-def settingup_celery(project_name):
-    script_path = os.path.realpath(__file__)
-    celery_path = script_path.replace("auto-django.py", 'celery.py')
-
-    with open(celery_path, 'r') as file:
-        celery = file.read()
-        celery = celery.replace("django_base_architecture", project_name)
-
-    with open(celery_path, 'w') as file:
-        file.write(celery)
-        file.close()
-
-    shutil.move(celery_path, os.path.join(script_path.replace("auto-django.py", project_name), project_name))
-
-    with open(os.path.join(script_path.replace("auto-django.py", project_name), project_name, "__init__.py"), 'w') as file:
-        file.write("""from environ import Env
-from .celery import app as celery_app
-
-
-Env.read_env()
-env = Env()
-
-__all__ = ("celery_app", "env")
-""")
-
-    with open(os.path.join(script_path.replace("auto-django.py", project_name), project_name, "settings.py"), 'a') as file:
-        file.write("\nCELERY_BROKER_URL = env('CELERY_BROKER_URL')\n")
-
-
 if __name__ == "__main__":
     python_path = input("Enter python path for a specific Python version or press Enter for the default environment: ").strip()
     while python_path:
@@ -145,7 +117,16 @@ if __name__ == "__main__":
                 database = ""
         except ValueError:
             print("Enter a valid integer or just press 'ENTER' for default DB configuration")
-    project_name = input("Enter project name : ")
+    while True:
+        name_regex = r'^[a-zA-Z_][a-zA-Z0-9_]*$'
+        project_name = input("Enter project name : ")
+        if bool(re.match(name_regex, project_name)):
+            break
+        else:
+            print(
+                """\nNames must start with a letter or an underscore.
+                Following characters can be letters, digits, or underscores.
+                Names cannot start with a digit.""")
     celery = input("Do you want celery, 'Y' for yes: ")
     redis = input("want redis cache setup? 'Y' for yes: ")
     create_python_venv(python_path)
