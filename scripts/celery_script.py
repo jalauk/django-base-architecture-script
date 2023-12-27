@@ -20,7 +20,7 @@ app.autodiscover_tasks()
 
 @app.task(bind=True, ignore_result=True)
 def debug_task(self):
-    print(f'Request: {self.request!r}')"""
+    print(f'Request: {self.request!r}')"""   # noqa
     celery_content = celery_content.replace("django_base_architecture", project_name)
     with open(path, 'w') as file:
         file.write(celery_content)

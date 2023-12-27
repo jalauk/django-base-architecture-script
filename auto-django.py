@@ -7,11 +7,16 @@ from scripts.exceptions_script import create_exceptions
 from scripts.utils_script import create_utils
 from scripts.settings_script import create_settings
 from scripts.logger_middleware_script import create_logger_middleware
+from scripts.project_init_script import create_project_init
+from scripts.create_env_script import create_env
 
 
 def settingup_django(project_name, database, celery, redis):
     script_path = os.path.realpath(__file__)
     base_path = script_path.replace("auto-django.py", project_name)
+
+    init_path = os.path.join(base_path, f'{project_name}/__init__.py')
+    create_project_init(init_path, celery)
 
     settings_path = os.path.join(base_path, f'{project_name}/settings.py')
     create_settings(settings_path, project_name, database, celery, redis)
@@ -23,6 +28,9 @@ def settingup_django(project_name, database, celery, redis):
     if celery.lower() == 'y':
         celery_path = os.path.join(base_path, f'{project_name}/celery.py')
         create_celery(celery_path, project_name)
+
+    env_path = os.path.join(base_path, f'{project_name}/.env')
+    create_env(env_path, celery, redis, database)
 
     utils_path = os.path.join(base_path, "utils")
     os.makedirs(utils_path)
@@ -140,9 +148,9 @@ if __name__ == "__main__":
     project_name = input("Enter project name : ")
     celery = input("Do you want celery, 'Y' for yes: ")
     redis = input("want redis cache setup? 'Y' for yes: ")
-    # create_python_venv(python_path)
-    # install_package_in_venv(database, celery, redis)
-    # create_django_project(project_name)
+    create_python_venv(python_path)
+    install_package_in_venv(database, celery, redis)
+    create_django_project(project_name)
     settingup_django(project_name, database, celery, redis)
     # os.remove("settings.py")
     # os.remove(sys.argv[0])

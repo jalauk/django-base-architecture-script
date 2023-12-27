@@ -150,6 +150,9 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
     }
 }\n"""
 
+    if celery.lower() == 'y':
+        settings_content = settings_content + '\nCELERY_BROKER_URL = env("CELERY_BROKER_URL")\n'
+
     db_config = ""
     db_default_config = """DATABASES = {
     'default': {
