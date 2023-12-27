@@ -16,12 +16,6 @@ def settingup_django(project_name, database, celery, redis):
     settings_path = os.path.join(base_path, f'{project_name}/settings.py')
     create_settings(settings_path, project_name, database, celery, redis)
 
-    utils_path = os.path.join(base_path, "utils")
-    create_utils(utils_path, project_name)
-
-    logger_path = os.path.join(base_path, f"{project_name}/middlewares/LoggerMiddleware.py")
-    create_logger_middleware(logger_path)
-
     exception_path = os.path.join(base_path, f"{project_name}/exception.py")
     exception_handler_path = os.path.join(base_path, f"{project_name}/exception_handler.py")
     create_exceptions(exception_path, exception_handler_path)
@@ -29,6 +23,14 @@ def settingup_django(project_name, database, celery, redis):
     if celery.lower() == 'y':
         celery_path = os.path.join(base_path, f'{project_name}/celery.py')
         create_celery(celery_path, project_name)
+
+    utils_path = os.path.join(base_path, "utils")
+    os.makedirs(utils_path)
+    create_utils(utils_path, project_name)
+
+    logger_path = os.path.join(base_path, f"{project_name}/middlewares")
+    os.makedirs(logger_path)
+    create_logger_middleware(os.path.join(logger_path, "LoggerMiddleware.py"))
 
 
 def create_django_project(project_name):
@@ -42,7 +44,6 @@ def install_package_in_venv(database, celery="", redis=""):
     # Replace 'path/to/your/venv' with the path to your virtual environment
     venv_path = os.path.realpath(__file__)
     venv_path = venv_path.replace("auto-django.py", "venv")
-
 
     # Activate the virtual environment
     activate_script = os.path.join(venv_path, 'Scripts' if sys.platform == 'win32' else 'bin', 'activate')
@@ -139,9 +140,9 @@ if __name__ == "__main__":
     project_name = input("Enter project name : ")
     celery = input("Do you want celery, 'Y' for yes: ")
     redis = input("want redis cache setup? 'Y' for yes: ")
-    create_python_venv(python_path)
-    install_package_in_venv(database, celery, redis)
-    create_django_project(project_name)
+    # create_python_venv(python_path)
+    # install_package_in_venv(database, celery, redis)
+    # create_django_project(project_name)
     settingup_django(project_name, database, celery, redis)
-    os.remove("settings.py")
-    os.remove(sys.argv[0])
+    # os.remove("settings.py")
+    # os.remove(sys.argv[0])

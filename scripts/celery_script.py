@@ -23,5 +23,5 @@ def debug_task(self):
     print(f'Request: {self.request!r}')"""
     celery_content = celery_content.replace("django_base_architecture", project_name)
     with open(path, 'w') as file:
-        file = file.write(celery_content)
+        file.write(celery_content)
         file.close()
