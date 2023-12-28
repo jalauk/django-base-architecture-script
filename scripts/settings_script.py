@@ -190,7 +190,7 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
         'ENGINE': 'djongo',
         'ENFORCE_SCHEMA': False, 
         'CLIENT': {
-            'HOST': f"mongodb+srv://{env('DB_USER')}:{env('DB_PASSWORD')}@{env('DB_CLUSTER')}/{env('DB_NAME')}",
+            'host': f"mongodb+srv://{env('DB_USER')}:{env('DB_PASSWORD')}@{env('DB_CLUSTER')}/{env('DB_NAME')}",
         }
     }
 }"""
