@@ -2,7 +2,6 @@ import subprocess
 import sys
 import os
 import shutil
-import re
 from scripts.celery_script import create_celery
 from scripts.exceptions_script import create_exceptions
 from scripts.utils_script import create_utils
@@ -140,5 +139,7 @@ if __name__ == "__main__":
     create_django_project(project_name)
     create_requirements_file(project_name)
     settingup_django(project_name, database, celery, redis)
-    # os.remove("settings.py")
-    # os.remove(sys.argv[0])
+    # base_file = os.path.realpath(__file__)
+    # script_path = base_file.replace("auto-django.py", "scripts")
+    # shutil.rmtree(script_path)
+    # os.remove(base_file)
