@@ -138,20 +138,15 @@ from .helper import Helper        # noqa
 
     with open(os.path.join(utils_path, '__init__.py'), 'w') as file:
         file.write(init_content)
-        file.close()
 
     with open(os.path.join(utils_path, 'constants.py'), 'w') as file:
         file.write(constants_content)
-        file.close()
 
     with open(os.path.join(utils_path, 'helper.py'), 'w') as file:
         file.write(helper_content)
-        file.close()
 
     with open(os.path.join(utils_path, 'logger.py'), 'w') as file:
         file.write(logger_content)
-        file.close()
 
     with open(os.path.join(utils_path, 'responder.py'), 'w') as file:
         file.write(responder_content)
-        file.close()

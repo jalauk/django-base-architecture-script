@@ -24,4 +24,4 @@ def debug_task(self):
     celery_content = celery_content.replace("django_base_architecture", project_name)
     with open(path, 'w') as file:
         file.write(celery_content)
-        file.close()
+          

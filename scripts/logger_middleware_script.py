@@ -43,4 +43,3 @@ class LoggerMiddleware(object):
 '''
     with open(logger_path, 'w') as file:
         file.write(logger_content)
-        file.close()
