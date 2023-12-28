@@ -24,7 +24,6 @@ def settingup_django(project_name, database, celery, redis):
 
     settings_path = os.path.join(base_path, f'{project_name}/settings.py')
     create_settings(settings_path, project_name, database, celery, redis)
-
     exception_path = os.path.join(base_path, f"{project_name}/exception.py")
     exception_handler_path = os.path.join(base_path, f"{project_name}/exception_handler.py")
     create_exceptions(exception_path, exception_handler_path)
@@ -66,6 +65,8 @@ def install_package_in_venv(database, celery="", redis=""):
         database_package = 'mysqlclient'
     elif database == 2:
         database_package = 'psycopg2'
+    elif database == 3:
+        database_package = 'djongo'
 
     celery_package = ""
     if celery.lower() == 'y':
@@ -86,6 +87,14 @@ def create_python_venv(python_path):
     subprocess.run([python_path, '-m', 'venv', 'venv'])
 
 
+def create_requirements_file(project_name):
+    script_path = os.path.realpath(__file__)
+    venv_path = script_path.replace("auto-django.py", "venv").replace("\\", "/")
+    django_path = script_path.replace("auto-django.py", project_name).replace("\\", "/")
+    cmd = f'"{venv_path}/Scripts/activate" && pip freeze > "{django_path}/requirements.txt"'
+    subprocess.run(cmd, shell=True, check=True)
+
+
 if __name__ == "__main__":
     python_path = input("Enter python path for a specific Python version or press Enter for the default environment: ").strip()
     while python_path:
@@ -96,7 +105,6 @@ if __name__ == "__main__":
             continue
         else:
             if python_path.split("\\")[-1] != "python.exe":
-                print(python_path.split("\\")[-1])
                 python_path = input("Given path is not a valid python path, path should contain 'python.exe' at end.").strip()
             else:
                 break
@@ -107,31 +115,30 @@ if __name__ == "__main__":
         database = input("""Enter a number to select a DB:
                         0 or enter for default
                         1 for mysql
-                        2 for postgres\n""").strip()
+                        2 for postgres
+                        3 for mongodb\n""").strip()
         try:
             if not database:
                 database = '0'
             database = int(database)
-            if database not in range(0, 3):
-                print("please select a valid number(0 to 2)")
+            if database not in range(0, 4):
+                print("please select a valid number(0 to 3)")
                 database = ""
         except ValueError:
             print("Enter a valid integer or just press 'ENTER' for default DB configuration")
+
     while True:
-        name_regex = r'^[a-zA-Z_][a-zA-Z0-9_]*$'
-        project_name = input("Enter project name : ")
-        if bool(re.match(name_regex, project_name)):
-            break
+        project_name = input("Enter Django project name: ")
+        if not project_name.isidentifier():
+            print("""\nProject name must start with a letter or an underscore. Following characters can be letters, digits, or underscores. It cannot start with a digit. Also, empty string is not allowed.""")    
         else:
-            print(
-                """\nNames must start with a letter or an underscore.
-                Following characters can be letters, digits, or underscores.
-                Names cannot start with a digit.""")
+            break
     celery = input("Do you want celery, 'Y' for yes: ")
     redis = input("want redis cache setup? 'Y' for yes: ")
     create_python_venv(python_path)
     install_package_in_venv(database, celery, redis)
     create_django_project(project_name)
+    create_requirements_file(project_name)
     settingup_django(project_name, database, celery, redis)
     # os.remove("settings.py")
     # os.remove(sys.argv[0])

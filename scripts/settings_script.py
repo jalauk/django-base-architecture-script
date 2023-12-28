@@ -171,7 +171,7 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
         'PORT': env('DB_PORT'),
     }
 }"""
-        settings_content = settings_content.replace(db_default_config.strip(), db_config.strip())
+   
     elif database == 2:
         db_config = """DATABASES = {
     'default': {
@@ -183,8 +183,18 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
         'PORT': env('DB_PORT'),
     }
 }"""
-        settings_content = settings_content.replace(db_default_config, db_config)
+
+    elif database == 3:
+        db_config = """DATABASES = {
+    'default': {
+        'ENGINE': 'djongo',
+        'ENFORCE_SCHEMA': False, 
+        'CLIENT': {
+            'HOST': f"mongodb+srv://{env('DB_USER')}:{env('DB_PASSWORD')}@{env('DB_CLUSTER')}/{env('DB_NAME')}",
+        }
+    }
+}"""
+    settings_content = settings_content.replace(db_default_config, db_config)
 
     with open(path, 'w') as file:
         file.write(settings_content)
-        file.close()

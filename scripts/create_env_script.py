@@ -30,5 +30,12 @@ DB_NAME='rql'
 DB_PORT='3306'\n
 """
 
+    elif database == 3:
+        env_content = env_content + """\nDB_USER='Charu1'
+DB_PASSWORD='root'
+DB_NAME='rql'
+DB_CLUSTER='cluster0.3c2ns1o.mongodb.net'\n
+"""
+
     with open(path, 'w') as file:
         file.write(env_content)
