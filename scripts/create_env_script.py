@@ -27,7 +27,7 @@ DB_PORT='3306'\n
 DB_HOST='localhost'
 DB_PASSWORD='null'
 DB_NAME='rql'
-DB_PORT='3306'\n
+DB_PORT='5432'\n
 """
 
     elif database == 3:
