@@ -31,10 +31,9 @@ DB_PORT='5432'\n
 """
 
     elif database == 3:
-        env_content = env_content + """\nDB_USER='Charu1'
-DB_PASSWORD='root'
-DB_NAME='rql'
-DB_CLUSTER='cluster0.3c2ns1o.mongodb.net'\n
+        env_content = env_content + """\nDB_NAME='rql'
+DB_HOST='localhost'
+DB_PORT='27017'\n
 """
 
     with open(path, 'w') as file:
