@@ -62,8 +62,8 @@ class Logger:
 
     @classmethod
     def log(cls, request, response, time_taken=None):
-        # if settings.DEBUG:
-        #     return None
+        if settings.DEBUG:
+            return None
         current_time = localtime(timezone=timezone(
             "Asia/Kolkata")).strftime("%I:%M:%S %p (%Z)")
         data = f"""
