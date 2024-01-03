@@ -93,6 +93,11 @@ def create_requirements_file(project_name):
     cmd = f'"{venv_path}/Scripts/activate" && pip freeze > "{django_path}/requirements.txt"'
     subprocess.run(cmd, shell=True, check=True)
 
+def cleanup():
+    base_file = os.path.realpath(__file__)
+    script_path = base_file.replace("auto-django.py", "scripts")
+    shutil.rmtree(script_path)
+    os.remove(base_file)
 
 if __name__ == "__main__":
     python_path = input("Enter python path for a specific Python version or press Enter for the default environment: ").strip()
@@ -139,7 +144,5 @@ if __name__ == "__main__":
     create_django_project(project_name)
     create_requirements_file(project_name)
     settingup_django(project_name, database, celery, redis)
-    base_file = os.path.realpath(__file__)
-    script_path = base_file.replace("auto-django.py", "scripts")
-    shutil.rmtree(script_path)
-    os.remove(base_file)
+    cleanup()
+    
