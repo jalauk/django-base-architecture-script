@@ -108,7 +108,9 @@ if __name__ == "__main__":
             else:
                 break
     if python_path == "":
-        python_path = 'python'
+        python_path = 'python3'
+        if sys.platform == 'win32': 
+            python_path = 'python'
     database = ""
     while isinstance(database, str):
         database = input("""Enter a number to select a DB:
