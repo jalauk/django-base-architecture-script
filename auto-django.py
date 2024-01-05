@@ -1,4 +1,3 @@
-
 import subprocess
 import sys
 import os
@@ -55,7 +54,6 @@ def install_package_in_venv(database, celery="", redis=""):
 
     # Activate the virtual environment
     activate_script = os.path.join(venv_path, 'Scripts' if sys.platform == 'win32' else 'bin', 'activate')
-    #os.chmod(activate_script, 0o755)
     activate_cmd = f'{activate_script}'
     activate_cmd = activate_cmd.replace('\\', '/')
 
@@ -95,6 +93,13 @@ def create_requirements_file(project_name):
     subprocess.run(cmd, shell=True, check=True)
 
 
+def cleanup():
+    base_file = os.path.realpath(__file__)
+    script_path = base_file.replace("auto-django.py", "scripts")
+    shutil.rmtree(script_path)
+    os.remove(base_file)
+
+
 if __name__ == "__main__":
     python_path = input("Enter python path for a specific Python version or press Enter for the default environment: ").strip()
     while python_path:
@@ -124,7 +129,7 @@ if __name__ == "__main__":
                 database = '0'
             database = int(database)
             if database not in range(0, 4):
-                print("please select a valid number(-1 to 3)")
+                print("please select a valid number(0 to 3)")
                 database = ""
         except ValueError:
             print("Enter a valid integer or just press 'ENTER' for default DB configuration")
@@ -142,7 +147,4 @@ if __name__ == "__main__":
     create_django_project(project_name)
     create_requirements_file(project_name)
     settingup_django(project_name, database, celery, redis)
-    # base_file = os.path.realpath(__file__)
-    # script_path = base_file.replace("auto-django.py", "scripts")
-    # shutil.rmtree(script_path)
-    # os.remove(base_file)
+    cleanup()
