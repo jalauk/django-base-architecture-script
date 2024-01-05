@@ -194,7 +194,9 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
         }
     }
 }"""
-    settings_content = settings_content.replace(db_default_config, db_config)
+
+    if db_config:
+        settings_content = settings_content.replace(db_default_config, db_config)
 
     with open(path, 'w') as file:
         file.write(settings_content)

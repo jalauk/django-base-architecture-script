@@ -1,3 +1,4 @@
+
 import subprocess
 import sys
 import os
@@ -43,7 +44,7 @@ def settingup_django(project_name, database, celery, redis):
 def create_django_project(project_name):
     venv_path = os.path.realpath(__file__)
     venv_path = venv_path.replace("auto-django.py", "venv").replace("\\", "/")
-    cmd = f'"{venv_path}/Scripts/activate" && django-admin startproject {project_name}'
+    cmd = f'/bin/bash -c "source {venv_path}/bin/activate && django-admin startproject {project_name}"' if sys.platform != 'win32' else f'"{venv_path}/Scripts/activate" && django-admin startproject {project_name}'
     subprocess.run(cmd, shell=True, check=True)
 
 
@@ -54,8 +55,8 @@ def install_package_in_venv(database, celery="", redis=""):
 
     # Activate the virtual environment
     activate_script = os.path.join(venv_path, 'Scripts' if sys.platform == 'win32' else 'bin', 'activate')
-    activate_command = f'source {activate_script}' if sys.platform != 'win32' else activate_script
-    activate_cmd = f'"{activate_command}" &&'
+    #os.chmod(activate_script, 0o755)
+    activate_cmd = f'{activate_script}'
     activate_cmd = activate_cmd.replace('\\', '/')
 
     # Install the package using pip inside the virtual environment
@@ -76,8 +77,8 @@ def install_package_in_venv(database, celery="", redis=""):
         redis_package = 'redis django-redis'
 
     install_cmd = f'pip install django djangorestframework {database_package} {celery_package} {redis_package} django-environ loguru django-cors-headers flake8'
-
-    cmd = f'{activate_cmd} {install_cmd}'
+    cmd = f'/bin/bash -c "source {activate_cmd} && {install_cmd}"' if sys.platform != 'win32' else f'{activate_cmd} && {install_cmd}'
+    #os.chmod(activate_script, 0o755)
     # Run the activation command and then install the package
     subprocess.run(cmd, shell=True, check=True)
 
@@ -90,7 +91,7 @@ def create_requirements_file(project_name):
     script_path = os.path.realpath(__file__)
     venv_path = script_path.replace("auto-django.py", "venv").replace("\\", "/")
     django_path = script_path.replace("auto-django.py", project_name).replace("\\", "/")
-    cmd = f'"{venv_path}/Scripts/activate" && pip freeze > "{django_path}/requirements.txt"'
+    cmd = f'/bin/bash -c "source {venv_path}/bin/activate && pip freeze > {django_path}/requirements.txt"' if sys.platform != 'win32' else f'"{venv_path}/Scripts/activate" && pip freeze > "{django_path}/requirements.txt"'
     subprocess.run(cmd, shell=True, check=True)
 
 
@@ -123,7 +124,7 @@ if __name__ == "__main__":
                 database = '0'
             database = int(database)
             if database not in range(0, 4):
-                print("please select a valid number(0 to 3)")
+                print("please select a valid number(-1 to 3)")
                 database = ""
         except ValueError:
             print("Enter a valid integer or just press 'ENTER' for default DB configuration")
