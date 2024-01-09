@@ -62,7 +62,7 @@ def install_package_in_venv(database, celery="", redis=""):
     if database == 1:
         database_package = 'mysqlclient'
     elif database == 2:
-        database_package = 'psycopg2'
+        database_package = 'psycopg2' if sys.platform == 'win32' else 'psycopg2-binary'
     elif database == 3:
         database_package = 'djongo'
 
